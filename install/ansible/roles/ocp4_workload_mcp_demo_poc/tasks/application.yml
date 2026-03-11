@@ -1,0 +1,45 @@
+---
+
+- name: Get OpenShift ingress certificate secret
+  when: ocp4_workload_mcp_demo_poc_amq_streams_enable_external_listener | bool
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ ocp4_workload_mcp_demo_poc_openshift_ingress_secret_certs }}"
+    namespace: openshift-ingress
+  register: r_secret_ingress_cert
+  retries: 120
+  delay: 10
+  ignore_errors: true
+  until:
+    - r_secret_ingress_cert is defined
+    - r_secret_ingress_cert.resources is defined
+    - r_secret_ingress_cert.resources | length > 0
+    - r_secret_ingress_cert.resources[0] is defined
+    - r_secret_ingress_cert.resources[0].data is defined
+
+- name: Set OpenShift ingress certificate and private key variables
+  when: ocp4_workload_mcp_demo_poc_amq_streams_enable_external_listener | bool
+  ansible.builtin.set_fact:
+    ocp4_workload_mcp_demo_poc_openshift_ingress_cert: "{{ r_secret_ingress_cert | json_query('resources[0].data.\"tls.crt\"') }}"
+    ocp4_workload_mcp_demo_poc_openshift_ingress_key: "{{ r_secret_ingress_cert | json_query('resources[0].data.\"tls.key\"') }}"
+
+- name: Set Dummy OpenShift ingress certificate and private key variables
+  when: not (ocp4_workload_mcp_demo_poc_amq_streams_enable_external_listener | bool)
+  ansible.builtin.set_fact:
+    ocp4_workload_mcp_demo_poc_openshift_ingress_cert: ""
+    ocp4_workload_mcp_demo_poc_openshift_ingress_key: ""
+
+- name: Create application
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'application/application.yaml.j2') | from_yaml }}"
+  # retries: 10
+  # delay: 60
+  # ignore_errors: true
+  register: application_result
+  # until: application_result is not failed
+
+- name: Print result from the previous task
+  ansible.builtin.debug:
+    var: application_result
