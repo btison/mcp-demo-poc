@@ -36,7 +36,8 @@ public class AgentResource {
                 .onItem().transform(r -> {
                     String userEmail = jwt.claim(Claims.email).orElse("").toString();
                     Log.infof("Agent request received: %s; userId: %s", r, userEmail);
-                    return sessionManager.handleRequest(r, userEmail);
+                    JsonObject jsonObject = new JsonObject(r);
+                    return sessionManager.handleRequest(jsonObject.getString("request"), userEmail);
                 })
                 .onItem().transform(response -> Response.status(Response.Status.OK).entity(new JsonObject().put("response", response).encode()).build())
                 .onFailure().recoverWithItem(throwable -> {

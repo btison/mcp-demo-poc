@@ -14,6 +14,8 @@ public class Session {
 
     private String threadId;
 
+    private String checkpointId;
+
     public String getSessionId() {
         return sessionId;
     }
@@ -52,5 +54,13 @@ public class Session {
 
     public void setThreadId(String threadId) {
         this.threadId = threadId;
+    }
+
+    public String getCheckpointId() {
+        return checkpointId;
+    }
+
+    public void setCheckpointId(String checkpointId) {
+        this.checkpointId = checkpointId;
     }
 }

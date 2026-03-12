@@ -45,6 +45,9 @@ public class RequestSession {
     @Column(name = "conversation_thread_id")
     private String conversationThreadId;
 
+    @Column(name = "conversation_checkpoint_id")
+    private String conversationCheckpointId;
+
     @Version
     @Column(name = "version")
     private int version;
@@ -112,6 +115,15 @@ public class RequestSession {
     public void setConversationThreadId(String conversationThreadId) {
         this.conversationThreadId = conversationThreadId;
     }
+
+    public String getConversationCheckpointId() {
+        return conversationCheckpointId;
+    }
+
+    public void setConversationCheckpointId(String conversationCheckpointId) {
+        this.conversationCheckpointId = conversationCheckpointId;
+    }
+
     public int getVersion() {
         return version;
     }

@@ -7,6 +7,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import org.globex.ai.agent.AgentManager;
+import org.globex.ai.agent.AgentRequest;
+import org.globex.ai.agent.AgentResponse;
 import org.globex.ai.model.SessionStatus;
 import org.globex.ai.persistence.RequestSession;
 
@@ -37,7 +39,11 @@ public class SessionManager {
             updateSessionInDatabase(session);
         }
 
-        return "response from session manager";
+        AgentResponse response = session.getAgent().sendRequestToAgent(new AgentRequest(request, session.getThreadId(), session.getCheckpointId()));
+        session.setCheckpointId(response.checkpointId());
+        updateSessionInDatabase(session);
+
+        return response.response();
     }
 
     Session resumeSessionFromDatabase(String userId) {
@@ -56,6 +62,7 @@ public class SessionManager {
         session.setAgentName(requestSession.getCurrentAgentId());
         session.setAgent(agentManager.getAgent(requestSession.getCurrentAgentId()));
         session.setThreadId(requestSession.getConversationThreadId());
+        session.setCheckpointId(requestSession.getConversationCheckpointId());
         return session;
     }
 
@@ -98,6 +105,7 @@ public class SessionManager {
         } else {
             requestSession.setCurrentAgentId(session.getAgentName());
             requestSession.setConversationThreadId(session.getThreadId());
+            requestSession.setConversationCheckpointId(session.getCheckpointId());
             requestSession.setSessionId(session.getSessionId());
             requestSession.setStatus(SessionStatus.ACTIVE);
             requestSession.setUpdatedAt(Instant.now());
