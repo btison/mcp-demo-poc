@@ -13,7 +13,7 @@ import java.time.Instant;
 @NamedQueries({
         @NamedQuery(name = "RequestSession.findBySessionId", query = "from RequestSession where sessionId = :sessionId"),
         @NamedQuery(name = "RequestSession.findBySessionIdAndStatus", query = "from RequestSession where sessionId = :sessionId and status = :status"),
-        @NamedQuery(name = "RequestSession.findByUserId", query = "from RequestSession where user = :user")
+        @NamedQuery(name = "RequestSession.findByUserId", query = "from RequestSession where user = :userId")
 })
 public class RequestSession {
 
