@@ -1,7 +1,7 @@
 package org.globex.ai.graph;
 
 import org.bsc.langgraph4j.action.NodeAction;
-import org.globex.ai.model.AIMessage;
+import org.globex.ai.model.AssistantMessage;
 import org.globex.ai.model.Message;
 
 import java.util.Map;
@@ -18,7 +18,7 @@ public class LlmNodeAction {
             Message lastHumanMessage = state.lastHumanMessage();
             String request = lastHumanMessage == null ? "" : lastHumanMessage.content();
             String response = llmAction.apply(request);
-            Map<String, Object> updateState = state.addMessage(new AIMessage(response));
+            Map<String, Object> updateState = state.addMessage(new AssistantMessage(response));
             return stateAction.apply(response, updateState);
         };
     }

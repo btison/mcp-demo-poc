@@ -1,6 +1,6 @@
 package org.globex.ai.model;
 
-public record AIMessage(
+public record AssistantMessage(
         String content
 ) implements Message {
 }

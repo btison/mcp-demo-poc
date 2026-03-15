@@ -2,7 +2,7 @@ package org.globex.ai.graph;
 
 import io.vertx.core.json.JsonObject;
 import org.bsc.langgraph4j.state.AgentState;
-import org.globex.ai.model.AIMessage;
+import org.globex.ai.model.AssistantMessage;
 import org.globex.ai.model.HumanMessage;
 import org.globex.ai.model.Message;
 
@@ -23,14 +23,7 @@ public class State extends AgentState {
 
     public Map<String, Object> addMessage(Message message, Map<String, Object> newState) {
         List<String> serializedMessages = (List<String>) value("messages").orElse(new ArrayList<>());
-        JsonObject json = new JsonObject();
-        json.put("content", message.content());
-        if (message instanceof HumanMessage) {
-            json.put("role", "user");
-        }  else if (message instanceof AIMessage) {
-            json.put("role", "ai");
-        }
-        serializedMessages.add(json.encode());
+        serializedMessages.add(toJson(message));
         return State.updateState(newState, Map.of("messages", serializedMessages), null);
     }
 
@@ -45,7 +38,7 @@ public class State extends AgentState {
     }
 
     public List<Message> aiMessages() {
-        return messages().stream().filter(message -> message instanceof AIMessage).toList();
+        return messages().stream().filter(message -> message instanceof AssistantMessage).toList();
     }
 
     public Message lastHumanMessage() {
@@ -70,8 +63,8 @@ public class State extends AgentState {
         json.put("content", message.content());
         if (message instanceof HumanMessage) {
             json.put("role", "user");
-        }  else if (message instanceof AIMessage) {
-            json.put("role", "ai");
+        }  else if (message instanceof AssistantMessage) {
+            json.put("role", "assistant");
         }
         return json.encode();
     }
@@ -83,7 +76,7 @@ public class State extends AgentState {
         if ("user".equals(role)) {
             return new HumanMessage(content);
         } else {
-            return new AIMessage(content);
+            return new AssistantMessage(content);
         }
     }
 }
