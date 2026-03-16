@@ -29,7 +29,7 @@ public class RoutingAIServiceProducer {
     public HandleOtherRequestAIService provideHandleOtherRequestAIService() {
         return AiServices.builder(HandleOtherRequestAIService.class)
                 .chatModel(chatModel)
-                .chatRequestTransformer(ChatRequestTransformer.overrideTemperature(aiServiceConfigs.aiServiceConfigs().get("identify-need").temperature()))
+                .chatRequestTransformer(ChatRequestTransformer.overrideTemperature(aiServiceConfigs.aiServiceConfigs().get("handle-other").temperature()))
                 .build();
     }
 
@@ -37,7 +37,7 @@ public class RoutingAIServiceProducer {
     public ClassifyIntentAIService provideClassifyIntentAIService() {
         return AiServices.builder(ClassifyIntentAIService.class)
                 .chatModel(chatModel)
-                .chatRequestTransformer(ChatRequestTransformer.overrideTemperature(aiServiceConfigs.aiServiceConfigs().get("identify-need").temperature()))
+                .chatRequestTransformer(ChatRequestTransformer.overrideTemperature(aiServiceConfigs.aiServiceConfigs().get("classify-intent").temperature()))
                 .build();
     }
 

@@ -62,8 +62,8 @@ public class RoutingAgentGraphProducer {
                 .addEdge("handle_other_request", "wait_for_input")
                 .addEdge("wait_for_input", "classify_intent")
                 .addConditionalEdges("classify_intent", handleIntent, EdgeMappings.builder()
-                        .to(GraphDefinition.END,  "LAPTOP_REFRESH")
-                        .to(GraphDefinition.END,  "EMAIL_CHANGE")
+                        .to(GraphDefinition.END,  "PRODUCT_COMPLAINT")
+                        .to(GraphDefinition.END,  "ORDER")
                         .to("handle_other_request", "OTHER")
                         .build());
 

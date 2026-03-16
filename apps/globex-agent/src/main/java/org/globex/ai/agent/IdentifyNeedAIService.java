@@ -15,8 +15,8 @@ public interface IdentifyNeedAIService {
             Tell them what you can help the with.
             
             Currently you can help with:
-              - Laptop refresh requests
-              - Email address updates
+              - product complaints
+              - inquiries about orders
             Ask them to describe what they need help with.
             """)
     String process(String input);

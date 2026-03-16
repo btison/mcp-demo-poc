@@ -13,18 +13,18 @@ public interface ClassifyIntentAIService {
             
             Analyze their request and determine what they need help with:
             
-            1. LAPTOP_REFRESH - User wants help with laptop refresh, replacement, new laptop, laptop upgrade, hardware refresh. Also includes requests that just say "refresh" or similar terms.
-            2. EMAIL_CHANGE - User wants to update, change, or modify their email address
+            1. PRODUCT_COMPLAINT - User wants to report a defect or a problem with a product. Also includes requests that just say "problem" or "defect" or similar terms. 
+            2. ORDER - User needs help with an order. This includes inquiries about delivery, shipping delays, backorders.
             3. OTHER - User needs help with something else or request is unclear
             
-            Examples of LAPTOP_REFRESH requests:
-              - "I need a new laptop"
-              - "laptop refresh"
-              - "refresh"
-              - "I want to refresh my laptop"
-              - "hardware refresh"
+            Examples of PRODUCT_COMPLAINT requests:
+              - "There is a problem with product xxxxxx"
+              - "Product xxxxx doesn't match the description"
+              - "I want to report a defect with a product"
+              - "My xxxxx is broken"
+              - "defect"
             
-            Respond with exactly one of: LAPTOP_REFRESH, EMAIL_CHANGE, or OTHER
+            Respond with exactly one of: PRODUCT_COMPLAINT, ORDER, or OTHER
             """)
     String process(String userMessage);
 

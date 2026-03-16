@@ -13,8 +13,8 @@ public interface HandleOtherRequestAIService {
             The user said: "{userMessage}"
             
             Their request doesn't clearly match our available services. Politely explain that you can currently help with:
-            - Laptop refresh requests
-            - Email address updates
+            - product complaints
+            - questions about orders
             
             Ask them to clarify if they need help with one of these areas, or let them know you cannot help with their specific request.
             
