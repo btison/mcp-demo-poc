@@ -1,4 +1,4 @@
-package org.globex.ai.agent;
+package org.globex.ai.agent.complaint;
 
 import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.mcp.client.McpClient;
@@ -9,6 +9,8 @@ import io.quarkiverse.langchain4j.mcp.runtime.McpClientName;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
+import org.globex.ai.agent.AIServiceConfigs;
+import org.globex.ai.agent.ChatRequestTransformer;
 
 @ApplicationScoped
 public class ComplaintAIServiceProducer {

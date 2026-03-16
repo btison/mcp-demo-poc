@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import org.bsc.langgraph4j.*;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.checkpoint.PostgresSaver;
-import org.globex.ai.agent.LookupOrderHistoryAIService;
+import org.globex.ai.agent.complaint.LookupOrderHistoryAIService;
 import org.globex.ai.persistence.PostgresqlConfig;
 
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package org.globex.ai.agent;
+package org.globex.ai.agent.routing;
 
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;

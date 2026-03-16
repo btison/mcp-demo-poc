@@ -9,9 +9,9 @@ import org.bsc.langgraph4j.action.AsyncEdgeAction;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.checkpoint.PostgresSaver;
 import org.bsc.langgraph4j.utils.EdgeMappings;
-import org.globex.ai.agent.ClassifyIntentAIService;
-import org.globex.ai.agent.HandleOtherRequestAIService;
-import org.globex.ai.agent.IdentifyNeedAIService;
+import org.globex.ai.agent.routing.ClassifyIntentAIService;
+import org.globex.ai.agent.routing.HandleOtherRequestAIService;
+import org.globex.ai.agent.routing.IdentifyNeedAIService;
 import org.globex.ai.persistence.PostgresqlConfig;
 
 import java.sql.SQLException;

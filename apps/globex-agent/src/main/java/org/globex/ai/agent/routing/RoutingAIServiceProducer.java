@@ -1,4 +1,4 @@
-package org.globex.ai.agent;
+package org.globex.ai.agent.routing;
 
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
@@ -6,6 +6,8 @@ import io.quarkiverse.langchain4j.ModelName;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
+import org.globex.ai.agent.AIServiceConfigs;
+import org.globex.ai.agent.ChatRequestTransformer;
 
 @ApplicationScoped
 public class RoutingAIServiceProducer {
