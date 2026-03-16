@@ -8,6 +8,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.globex.mcp.store.mcp.model.LineItem;
 import org.globex.mcp.store.mcp.model.Order;
+import org.globex.mcp.store.mcp.model.OrderList;
 import org.globex.mcp.store.service.GlobexStoreApi;
 import org.globex.mcp.store.service.model.Customer;
 
@@ -22,7 +23,7 @@ public class GlobexStoreMcp {
     HttpServerRequest request;
 
     @Tool(name = "get_order_history", description = "Retrieve a customer's order history based on their customer email")
-    public List<Order> getOrderHistory() {
+    public OrderList getOrderHistory() {
         String userId = request.getHeader("X-User-Id");
         if (userId == null || userId.isEmpty()) {
             Log.error("Missing X-User-Id HTTP Header");
@@ -38,10 +39,10 @@ public class GlobexStoreMcp {
             customer = globexStoreApi.getCustomerByUserId(userId);
         }
         if (customer == null) {
-            return List.of();
+            return new OrderList(List.of());
         }
         List<org.globex.mcp.store.service.model.Order> orders = globexStoreApi.getOrdersByCustomerId(customer.getUserId());
-        return orders.stream().map(o -> Order.builder()
+        List<Order> orderList =  orders.stream().map(o -> Order.builder()
                 .withId(o.getId())
                 .withCustomer(o.getCustomer())
                 .withTimestamp(o.getTimestamp())
@@ -52,6 +53,7 @@ public class GlobexStoreMcp {
                                 .build())
                         .toList())
                 .build()).toList();
+        return new OrderList(orderList);
     }
 
 }
