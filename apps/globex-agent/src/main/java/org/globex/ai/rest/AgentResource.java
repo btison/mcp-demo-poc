@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.globex.ai.service.AuthoritativeUserIdHolder;
 import org.globex.ai.service.SessionManager;
 
 @Path("/api/v1")
@@ -25,6 +26,9 @@ public class AgentResource {
     @Inject
     SessionManager sessionManager;
 
+    @Inject
+    AuthoritativeUserIdHolder authorativeUserIdHolder;
+
     @Path("/request")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -36,6 +40,7 @@ public class AgentResource {
                 .onItem().transform(r -> {
                     String userEmail = jwt.claim(Claims.email).orElse("").toString();
                     Log.infof("Agent request received: %s; userId: %s", r, userEmail);
+                    authorativeUserIdHolder.setUserId(userEmail);
                     JsonObject jsonObject = new JsonObject(r);
                     return sessionManager.handleRequest(jsonObject.getString("request"), userEmail);
                 })
