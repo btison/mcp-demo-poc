@@ -1,5 +1,6 @@
 package org.globex.ai.graph;
 
+import dev.langchain4j.data.message.ToolExecutionResultMessage;
 import io.vertx.core.json.JsonObject;
 import org.bsc.langgraph4j.state.AgentState;
 import org.globex.ai.model.AssistantMessage;
@@ -58,6 +59,25 @@ public class State extends AgentState {
         }
     }
 
+    public List<ToolExecutionResultMessage> toolExecutionResultMessages() {
+        List<String> serializedMessages = (List<String>) value("tool_execution_results").orElse(new ArrayList<>());
+        return serializedMessages.stream().map(this::toolExecutionResultMessagefromJson).toList();
+    }
+
+    public Map<String, Object> addToolExecutionResultMessage(ToolExecutionResultMessage message) {
+        List<String> serializedMessages = (List<String>) value("tool_execution_results").orElse(new ArrayList<>());
+        serializedMessages.add(toolExecutionResultMessageToJson(message));
+        return State.updateState(this, Map.of("tool_execution_results", serializedMessages), null);
+    }
+
+    public ToolExecutionResultMessage lastToolExecutionResultMessage() {
+        if (toolExecutionResultMessages().isEmpty()) {
+            return null;
+        } else {
+            return toolExecutionResultMessages().getLast();
+        }
+    }
+
     String toJson(Message message) {
         JsonObject json = new JsonObject();
         json.put("content", message.content());
@@ -78,5 +98,24 @@ public class State extends AgentState {
         } else {
             return new AssistantMessage(content);
         }
+    }
+
+    ToolExecutionResultMessage toolExecutionResultMessagefromJson(String serialized) {
+        JsonObject json = new JsonObject(serialized);
+        return ToolExecutionResultMessage.builder()
+                .id(json.getString("id"))
+                .toolName(json.getString("toolName"))
+                .attributes(json.getJsonObject("attributes").getMap())
+                .text(json.getString("text"))
+                .build();
+    }
+
+    String toolExecutionResultMessageToJson(ToolExecutionResultMessage message) {
+        JsonObject json = new JsonObject();
+        json.put("id", message.id());
+        json.put("toolName", message.toolName());
+        json.put("attributes", new JsonObject(message.attributes()));
+        json.put("text", message.text());
+        return json.encode();
     }
 }

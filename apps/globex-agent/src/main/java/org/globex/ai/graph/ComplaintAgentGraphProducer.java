@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 import org.bsc.langgraph4j.*;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.checkpoint.PostgresSaver;
-import org.globex.ai.agent.complaint.LookupOrderHistoryAIService;
 import org.globex.ai.persistence.PostgresqlConfig;
 
 import java.sql.SQLException;
@@ -20,7 +19,7 @@ public class ComplaintAgentGraphProducer {
     PostgresqlConfig postgresqlConfig;
 
     @Inject
-    LookupOrderHistoryAIService lookupOrderHistoryAIService;
+    OrderHistoryToolCallAction orderHistoryToolCallAction;
 
     @Produces
     @Identifier("complaint-agent")
@@ -33,8 +32,8 @@ public class ComplaintAgentGraphProducer {
     }
 
     CompiledGraph<State> compiledGraph() throws GraphStateException, SQLException {
-        AsyncNodeAction<State> lookupOrderHistory = AsyncNodeAction.node_async(LlmNodeAction.get(s -> lookupOrderHistoryAIService.handleGetOrderHistory(s)));
-        AsyncNodeAction<State> waitForUserInput =AsyncNodeAction.node_async(state -> Map.of());
+        AsyncNodeAction<State> lookupOrderHistory = AsyncNodeAction.node_async(orderHistoryToolCallAction.get());
+        AsyncNodeAction<State> waitForUserInput = AsyncNodeAction.node_async(state -> Map.of());
 
         StateGraph<State> graph = new StateGraph<>(State::new)
                 .addNode("lookup_order_history", lookupOrderHistory)
