@@ -11,6 +11,7 @@ import org.bsc.langgraph4j.action.AsyncEdgeAction;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.checkpoint.PostgresSaver;
 import org.bsc.langgraph4j.utils.EdgeMappings;
+import org.globex.ai.agent.ConversationChatMemory;
 import org.globex.ai.agent.complaint.HandleProductNotSelectedAIService;
 import org.globex.ai.agent.complaint.ProductSelectionAIService;
 import org.globex.ai.persistence.PostgresqlConfig;
@@ -30,6 +31,9 @@ public class ComplaintAgentGraphProducer {
     @Inject
     @McpClientName("globex-store")
     McpClient mcpClient;
+
+    @Inject
+    ConversationChatMemory conversationChatMemory;
 
     @Inject
     ProductSelectionAIService aiService;
@@ -52,6 +56,7 @@ public class ComplaintAgentGraphProducer {
         AsyncNodeAction<State> waitForUserInput = node_async(state -> Map.of());
         AsyncNodeAction<State> productSelection = node_async(ProductSelectionNodeAction.get((input, orderHistory) -> aiService.selectProduct(input, orderHistory)));
         AsyncNodeAction<State> handleProductNotSelected = node_async(LlmNodeAction.get(s -> handleProductNotSelectedAIService.handleRequest(s)));
+        AsyncNodeAction<State> initChatMemory = node_async(InitChatHistoryNodeAction.get(conversationChatMemory));
 
         AsyncEdgeAction<State> handleProductSelection = edge_async(state -> state.value("product_selection").orElse("PRODUCT_NOT_SELECTED").toString());
 
@@ -60,12 +65,14 @@ public class ComplaintAgentGraphProducer {
                 .addNode("wait_for_input_product_selection", waitForUserInput)
                 .addNode("product_selection", productSelection)
                 .addNode("handle_product_not_selected", handleProductNotSelected)
+                .addNode("init_chat_memory", initChatMemory)
                 .addEdge(GraphDefinition.START, "lookup_order_history")
                 .addEdge("lookup_order_history", "wait_for_input_product_selection")
                 .addEdge("wait_for_input_product_selection", "product_selection")
                 .addEdge("handle_product_not_selected", "wait_for_input_product_selection")
+                .addEdge("init_chat_memory", GraphDefinition.END)
                 .addConditionalEdges("product_selection", handleProductSelection, EdgeMappings.builder()
-                        .to(GraphDefinition.END,  "PRODUCT_SELECTED")
+                        .to("init_chat_memory", "PRODUCT_SELECTED")
                         .to("handle_product_not_selected", "PRODUCT_NOT_SELECTED")
                         .build());
 

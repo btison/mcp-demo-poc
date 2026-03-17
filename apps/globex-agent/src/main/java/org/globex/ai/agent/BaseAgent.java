@@ -25,6 +25,7 @@ public class BaseAgent {
                     .build();
             State state = new State(Map.of());
             Map<String, Object> updateState = state.addMessage(new HumanMessage(request.request()));
+            updateState.put("thread_id", request.threadId());
             output = executeGraphAndFetchLastState(graph, config, updateState);
         } else {
             config = RunnableConfig.builder()
