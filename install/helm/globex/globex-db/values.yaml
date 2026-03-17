@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: quay.io/cloud-architecture-workshop/globex-store-db
   pullPolicy: IfNotPresent
-  tag: 4e8c437
+  tag: afb472c
 
 podSecurityContext: 
   runAsNonRoot: true
