@@ -47,3 +47,8 @@ globex-store-mcp:
   argocd:
     enabled: true
     syncwave: "1"
+
+globex-complaints:
+  argocd:
+    enabled: true
+    syncwave: "1"

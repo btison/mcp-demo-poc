@@ -32,3 +32,6 @@ dependencies:
   - name: globex-store-mcp
     version: 0.1.0
     repository: file://globex-store-mcp
+  - name: globex-complaints
+    version: 0.1.0
+    repository: file://globex-complaints
