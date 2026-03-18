@@ -23,7 +23,8 @@ public class ComplaintService {
         complaint.issueType = request.issueType;
         complaint.severity = request.severity;
         complaint.complaint = request.complaint;
-        complaint.status = request.status;
+        complaint.resolution = request.resolution;
+        complaint.status = "NEW";
 
         complaint.persist();
         return ComplaintDto.from(complaint);

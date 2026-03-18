@@ -7,6 +7,6 @@ public class CreateComplaintRequest {
     public String productCode;
     public String issueType;
     public String severity;
+    public String resolution;
     public String complaint;
-    public String status;
 }
