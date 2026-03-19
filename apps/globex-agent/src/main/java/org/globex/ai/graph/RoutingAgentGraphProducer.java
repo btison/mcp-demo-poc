@@ -43,7 +43,14 @@ public class RoutingAgentGraphProducer {
     }
 
     CompiledGraph<State> compiledGraph() throws GraphStateException, SQLException {
-        AsyncNodeAction<State> greetAndIdentifyNeed = AsyncNodeAction.node_async(LlmNodeAction.get(s -> identifyNeedAIService.process(s)));
+        AsyncNodeAction<State> greetAndIdentifyNeed = AsyncNodeAction.node_async(LlmNodeAction.get(s -> identifyNeedAIService.process(s), (value, state) -> {
+            if ("CONTINUE".equals(value)) {
+                state.put("eval", "CONTINUE");
+            } else {
+                state.put("eval", "WAIT");
+            }
+            return state;
+        }));
         AsyncNodeAction<State> handleOtherRequest = AsyncNodeAction.node_async(LlmNodeAction.get(s -> handleOtherRequestAIService.process(s)));
         AsyncNodeAction<State> classifyIntent = AsyncNodeAction.node_async(LlmNodeAction.get(s -> classifyIntentAIService.process(s), (value, state) -> {
             state.put("intent", value);
@@ -57,6 +64,7 @@ public class RoutingAgentGraphProducer {
             return state;
         }));
         AsyncNodeAction<State> waitForUserInput =AsyncNodeAction.node_async(state -> Map.of());
+        AsyncEdgeAction<State> handleInitialInput = AsyncEdgeAction.edge_async(state -> state.value("eval").orElse("WAIT").toString());
         AsyncEdgeAction<State> handleIntent = AsyncEdgeAction.edge_async(state -> {
             String routing = state.value("routing_target").orElse("OTHER").toString();
             if (!routing.equals("OTHER")) {
@@ -72,9 +80,12 @@ public class RoutingAgentGraphProducer {
                 .addNode("classify_intent", classifyIntent)
                 .addNode("wait_for_input", waitForUserInput)
                 .addEdge(GraphDefinition.START, "greet_and_identify_need")
-                .addEdge("greet_and_identify_need", "wait_for_input")
                 .addEdge("handle_other_request", "wait_for_input")
                 .addEdge("wait_for_input", "classify_intent")
+                .addConditionalEdges("greet_and_identify_need", handleInitialInput, EdgeMappings.builder()
+                        .to("wait_for_input", "WAIT")
+                        .to("classify_intent", "CONTINUE")
+                        .build())
                 .addConditionalEdges("classify_intent", handleIntent, EdgeMappings.builder()
                         .to(GraphDefinition.END,  "ROUTE_TO_AGENT")
                         .to("handle_other_request", "OTHER")
