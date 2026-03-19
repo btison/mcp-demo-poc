@@ -1,6 +1,7 @@
 package org.globex.ai.service;
 
 import org.globex.ai.agent.Agent;
+import org.globex.ai.agent.AgentManager;
 
 public class Session {
 
@@ -62,5 +63,13 @@ public class Session {
 
     public void setCheckpointId(String checkpointId) {
         this.checkpointId = checkpointId;
+    }
+
+    public boolean isSpecialistSession() {
+        return !AgentManager.ROUTING_AGENT.equals(agentName);
+    }
+
+    boolean isRoutingSession() {
+        return AgentManager.ROUTING_AGENT.equals(agentName);
     }
 }

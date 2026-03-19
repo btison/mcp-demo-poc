@@ -27,49 +27,65 @@ public class SessionManager {
 
     public String handleRequest(String request, String userId) {
 
-        Session session;
-
-        session = resumeSessionFromDatabase(userId);
-        if (session != null) {
-            Log.infof("Resumed existing session for user %s; session: %s; threadId: %s; agent: %s", userId, session.getSessionId(), session.getThreadId(), session.getAgentName());
-        }
-        if (session == null) {
-            Log.infof("Creating initial session for user %s", userId);
-            session = createInitialSession(userId);
-            updateSessionInDatabase(session);
-        }
+        Session session = resumeSessionFromDatabase(userId);
 
         AgentResponse response = session.getAgent().sendRequestToAgent(new AgentRequest(request, session.getThreadId(), session.getCheckpointId()));
         session.setCheckpointId(response.checkpointId());
+        if (response.requiresRouting()) {
+            if ((response.routingTarget() == null || response.routingTarget().isEmpty() || response.routingTarget().equals(AgentManager.ROUTING_AGENT))
+                    && session.isSpecialistSession()) {
+                resetConversationState(session);
+            } else if ((response.routingTarget() != null && !response.routingTarget().isEmpty() && !response.routingTarget().equals(AgentManager.ROUTING_AGENT))
+                    && session.isRoutingSession()) {
+                resetConversationState(session);
+                session.setAgentName(response.routingTarget());
+                session.setAgent(agentManager.getAgent(response.routingTarget()));
+                session.setThreadId(UUID.randomUUID().toString());
+                updateSessionInDatabase(session);
+                return handleRequest("", userId);
+            }
+        }
         updateSessionInDatabase(session);
-
         return response.response();
     }
 
     Session resumeSessionFromDatabase(String userId) {
         RequestSession requestSession = loadSessionFromDatabase(userId);
         if (requestSession == null) {
-            return null;
-        }
-        if (requestSession.getCurrentAgentId() == null || requestSession.getCurrentAgentId().isEmpty()
+            Log.infof("Creating initial session for user %s", userId);
+            Session session = createInitialSession(userId);
+            updateSessionInDatabase(session);
+            return session;
+        } else if (requestSession.getCurrentAgentId() == null || requestSession.getCurrentAgentId().isEmpty()
                 || requestSession.getConversationThreadId() == null || requestSession.getConversationThreadId().isEmpty()) {
             Log.warnf("Session for user %s found but missing required fields", userId);
-            return null;
+            Session session = new Session();
+            session.setSessionId(requestSession.getSessionId());
+            session.setUserId(userId);
+            session = populateSession(session);
+            updateSessionInDatabase(session);
+            return session;
+        } else {
+            Session session = new Session();
+            session.setSessionId(requestSession.getSessionId());
+            session.setUserId(userId);
+            session.setAgentName(requestSession.getCurrentAgentId());
+            session.setAgent(agentManager.getAgent(requestSession.getCurrentAgentId()));
+            session.setThreadId(requestSession.getConversationThreadId());
+            session.setCheckpointId(requestSession.getConversationCheckpointId());
+            Log.infof("Resumed existing session for user %s; session: %s; threadId: %s; agent: %s", userId, session.getSessionId(), session.getThreadId(), session.getAgentName());
+            return session;
         }
-        Session session = new Session();
-        session.setSessionId(requestSession.getSessionId());
-        session.setUserId(userId);
-        session.setAgentName(requestSession.getCurrentAgentId());
-        session.setAgent(agentManager.getAgent(requestSession.getCurrentAgentId()));
-        session.setThreadId(requestSession.getConversationThreadId());
-        session.setCheckpointId(requestSession.getConversationCheckpointId());
-        return session;
     }
 
     Session createInitialSession(String userId) {
         Session session = new Session();
         session.setSessionId(UUID.randomUUID().toString());
         session.setUserId(userId);
+        return populateSession(session);
+    }
+
+    Session populateSession(Session session) {
         session.setAgentName(AgentManager.ROUTING_AGENT);
         session.setAgent(agentManager.getAgent(AgentManager.ROUTING_AGENT));
         session.setThreadId(UUID.randomUUID().toString());
@@ -110,6 +126,13 @@ public class SessionManager {
             requestSession.setStatus(SessionStatus.ACTIVE);
             requestSession.setUpdatedAt(Instant.now());
         }
+    }
+
+    void resetConversationState(Session session) {
+        session.setAgent(null);
+        session.setThreadId(null);
+        session.setAgentName(null);
+        session.setCheckpointId(null);
     }
 
 }
