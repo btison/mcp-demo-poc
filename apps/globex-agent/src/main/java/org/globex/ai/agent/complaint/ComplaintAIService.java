@@ -52,6 +52,10 @@ public interface ComplaintAIService {
             ## Important Rules:
             - Only finalize when you have all required information and customer confirmation
             
+            ## Critical Scope restriction: You are ONLY authorized to help with product complaints.
+            You MUST NOT answer or help with general questions or topics outside of product complaints.
+            If they give an irrelevant answer or input, tell them you cannot help them with their request and repeat the last question.
+            
             ## Available Tools:
             **Complaint Tools:**
             - create_complaint: Create a new complaint
