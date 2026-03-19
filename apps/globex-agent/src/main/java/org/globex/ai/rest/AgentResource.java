@@ -7,6 +7,7 @@ import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.vertx.core.json.JsonObject;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.MediaType;
@@ -54,6 +55,23 @@ public class AgentResource {
                 .onFailure().recoverWithItem(throwable -> {
                     Log.error("Failed to handle request", throwable);
                     return Response.serverError().entity(new JsonObject().put("error", "Internal server error processing the request")).build();
+                });
+    }
+
+    @Path("/request")
+    @DELETE
+    public Uni<Response> clearConversation() {
+        return Uni.createFrom().nullItem().emitOn(Infrastructure.getDefaultWorkerPool())
+                .onItem().invoke(v -> {
+                    String userId = jwt.claim(Claims.preferred_username).orElse("").toString();
+                    Log.infof("Clear conversation request received; userId: %s",userId);
+                    authoritativeUserIdHolder.setUserId(userId);
+                    sessionManager.clearConversation(userId);
+                })
+                .onItem().transform(v -> Response.status(Response.Status.OK).build())
+                .onFailure().recoverWithItem(throwable -> {
+                    Log.error("Failed to handle Clear Conversation request", throwable);
+                    return Response.serverError().entity(new JsonObject().put("error", "Internal server error processing the clear conversation request")).build();
                 });
     }
 }

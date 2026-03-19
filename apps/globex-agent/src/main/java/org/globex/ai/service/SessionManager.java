@@ -49,6 +49,10 @@ public class SessionManager {
         return response.response();
     }
 
+    public void clearConversation(String userId) {
+        deleteRequestSession(userId);
+    }
+
     Session resumeSessionFromDatabase(String userId) {
         RequestSession requestSession = loadSessionFromDatabase(userId);
         if (requestSession == null) {
@@ -128,11 +132,19 @@ public class SessionManager {
         }
     }
 
+    @Transactional
+    void deleteRequestSession(String userId) {
+        RequestSession requestSession = loadSessionFromDatabase(userId);
+        if (requestSession == null) {
+            return;
+        }
+        em.remove(requestSession);
+    }
+
     void resetConversationState(Session session) {
         session.setAgent(null);
         session.setThreadId(null);
         session.setAgentName(null);
         session.setCheckpointId(null);
     }
-
 }
