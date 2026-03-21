@@ -111,7 +111,7 @@ spec:
           attributes: {}
 {{- end }}          
       client:
-        {{ $.Values.client.gateway }}:
+        {{ $.Values.client.gateway.name }}:
           - id: {{ uuidv4 }}
             name: uma_protection
             composite: false
@@ -568,12 +568,12 @@ spec:
           - offline_access
           - microprofile-jwt
       - id: {{ uuidv4 }} 
-        clientId: {{ $.Values.client.gateway }}
+        clientId: {{ $.Values.client.gateway.name }}
         surrogateAuthRequired: false
         enabled: true
         alwaysDisplayInConsole: false
         clientAuthenticatorType: client-secret
-        secret: "{{ randAlphaNum 32 }}"
+        secret: {{ include "keycloak-realmimport-globex.client-gateway-secret" . }}
         redirectUris:
           - "*"
         webOrigins:

@@ -86,3 +86,14 @@ User password
 {{- randAlpha 8 }}
 {{- end }}
 {{- end }}
+
+{{/*
+Globex-web-gateway client secret
+*/}}
+{{- define "keycloak-realmimport-globex.client-gateway-secret" -}}
+{{- if .Values.client.gateway.secret }}
+{{- .Values.client.gateway.secret }}
+{{- else }}
+{{- randAlphaNum 32 }}
+{{- end }}
+{{- end }}

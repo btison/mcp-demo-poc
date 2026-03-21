@@ -112,7 +112,8 @@ globex:
           realm:
             name: globex
           client:
-            gateway: globex-web-gateway
+            gateway:
+              name: globex-web-gateway
 
         globex-web:
           sso:

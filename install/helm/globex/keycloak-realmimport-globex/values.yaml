@@ -26,7 +26,9 @@ hook:
   maxTimeToWait: 120000
 
 client:
-  gateway: globex-web-gateway
+  gateway: 
+    name:
+    secret: 
 
 users:
   users:
