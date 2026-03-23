@@ -78,7 +78,7 @@ spec:
             - name: QUARKUS_DATASOURCE_PASSWORD
               value: ${POSTGRESQL_PASSWORD}
             - name: QUARKUS_DATASOURCE_JDBC_URL
-              vallue: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+              value: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
           volumeMounts:
             - mountPath: /deployments/config
               name: config
