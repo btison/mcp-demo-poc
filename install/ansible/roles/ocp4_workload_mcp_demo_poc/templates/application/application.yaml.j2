@@ -91,4 +91,28 @@ spec:
                   client:
                     gateway: 
                       secret: {{ ocp4_workload_mcp_demo_poc_rhbk_client_gateway_secret }}
+        minio:
+          enabled: true
+          source:
+            helm:
+              values:
+                minio:
+                  rootUser: minio
+                  rootPassword: {{ ocp4_workload_mcp_demo_poc_app_gitops_minio_secret }}
+                  securityContext:
+                    enabled: false
+
+        lgtm:
+          enabled: true
+          source:
+            helm:
+              values:
+                grafana:
+                  ingress:
+                    hosts:
+                      - grafana-lgtm.{{ r_openshift_subdomain }}
+                mimir:
+                  minio:
+                    rootUser: minio
+                    rootPassword: {{ ocp4_workload_mcp_demo_poc_app_gitops_minio_secret }}
 
