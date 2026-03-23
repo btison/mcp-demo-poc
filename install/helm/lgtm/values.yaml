@@ -1,0 +1,310 @@
+grafana:
+  enabled: true
+  nameOverride: grafana
+  fullnameOverride: grafana
+  testFramework:
+    enabled: false
+  rbac:
+    create: false
+  service:
+    port: 8080
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+    seccompProfile:
+      type: RuntimeDefault
+  ingress:
+    enabled: true
+    annotations:
+      route.openshift.io/termination: edge
+    hosts: []
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          uid: loki
+          type: loki
+          url: http://loki:3100
+          isDefault: false
+        - name: Mimir
+          uid: prom
+          type: prometheus
+          url: http://mimir-monolithic:8080/prometheus
+          isDefault: true
+        - name: Tempo
+          uid: tempo
+          type: tempo
+          url: http://tempo:3200
+          isDefault: false
+          jsonData:
+            tracesToLogsV2:
+              datasourceUid: loki
+            lokiSearch:
+              datasourceUid: loki
+            tracesToMetrics:
+              datasourceUid: prom
+            serviceMap:
+              datasourceUid: prom
+
+loki:
+  enabled: true
+  fullnameOverride: loki
+  nameOverride: loki
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  deploymentMode: SingleBinary
+  sidecar:
+    rules:
+      enabled: false
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+  gateway:
+    enabled: false
+  ruler:
+    enabled: false
+
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    podSecurityContext:
+      fsGroup: null
+      fsGroupChangePolicy: OnRootMismatch
+      runAsGroup: null
+      runAsNonRoot: true
+      runAsUser: null
+      seccompProfile:
+        type: RuntimeDefault
+    schemaConfig:
+      configs:
+        - from: 2024-04-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+    ingester:
+      chunk_encoding: snappy
+    tracing:
+      enabled: true
+    querier:
+      # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
+      max_concurrent: 1
+    storage:
+      type: filesystem
+
+  singleBinary:
+    affinity: 
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    replicas: 1
+    resources:
+      limits:
+        cpu: 3
+        memory: 4Gi
+      requests: null
+    extraEnv:
+      # Keep a little bit lower than memory limits
+      - name: GOMEMLIMIT
+        value: 3750MiB
+
+  # Enable minio for storage
+  minio:
+    enabled: false
+
+  # Zero out replica counts of other deployment modes
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
+  bloomCompactor:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
+
+tempo:
+  enabled: true
+  nameOverride: tempo
+  fullnameOverride: tempo
+  tempo:
+    reportingEnabled: false
+    extraVolumeMounts:
+      - mountPath: /var/tempo
+        name: storage
+    tag: main-74b857e
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: false    
+  securityContext:
+    fsGroup: null
+    runAsGroup: null
+    runAsNonRoot: true
+    runAsUser: null
+    seccompProfile:
+      type: RuntimeDefault
+  extraVolumes:
+    - name: storage
+      emptyDir: {}
+
+mimir:
+  enabled: true
+  deploymentMode: monolithic
+
+  fullnameOverride: mimir
+  nameOverride: mimir
+
+  kafka:
+    enabled: false
+
+  mimir:
+    structuredConfig:
+      limits:
+        # Delete from storage metrics data older than 62 days.
+        compactor_blocks_retention_period: 62d
+      ingest_storage:
+        enabled: false
+        kafka:
+          address: null
+          topic: null
+          auto_create_topic_default_partitions: null
+      distributor:
+        remote_timeout: null
+      ingester:
+        push_grpc_method_enabled: true
+      multitenancy_enabled: false
+
+  monolithic:
+    replicas: 1
+    image:
+      repository: docker.io/grafana/mimir
+      tag: r354-d48a2220
+    persistentVolume:
+      enabled: true
+      size: "8Gi"
+    zoneAwareReplication:
+      enabled: false
+    compression:
+      enabled: true
+    podSecurityContext:
+      fsGroup: null
+      runAsGroup: null
+      runAsNonRoot: true
+      runAsUser: null
+      seccompProfile:
+        type: RuntimeDefault
+    topologySpreadConstraints: null
+
+  minio:
+    enabled: true
+    name: minio
+    service:
+      port: 9000
+    rootUser: minio
+    rootPassword: ""
+
+  alertmanager:
+    enabled: false
+    fallbackConfig: null
+
+  rollout_operator:
+    enabled: false
+
+opentelemetry-collector:
+  enabled: true
+  nameOverride: otel
+  fullnameOverride: otel
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+  mode: deployment
+  internalTelemetryViaOTLP:
+    traces:
+      enabled: false
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  config:
+    exporters:
+      debug:
+        verbosity: detailed
+        sampling_initial: 5
+        sampling_thereafter: 200
+
+      # Export logs to Loki (LGTM stack) via OTLP/HTTP
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+        headers:
+          X-Scope-OrgID: "anonymous"
+        tls:
+          insecure: true
+      
+      # Export metrics to Mimir (LGTM stack) via nginx gateway with OTLP
+      otlphttp/mimir:
+        endpoint: http://mimir-monolithic:8080/otlp
+        headers:
+          X-Scope-OrgID: "anonymous"
+        tls:
+          insecure: true
+      
+      # Export traces to Tempo (LGTM stack)
+      otlp/tempo:
+        endpoint: "tempo:4317"
+        tls:
+          insecure: true
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    service:
+      pipelines:
+        logs:
+          receivers: [otlp]
+          exporters: [otlphttp/loki]
+        metrics:
+          receivers: [otlp]
+          exporters: [otlphttp/mimir]
+        traces:
+          receivers: [otlp]
+          exporters: [otlp/tempo]

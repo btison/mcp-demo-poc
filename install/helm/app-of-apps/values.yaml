@@ -147,3 +147,36 @@ globex:
   argocd:
     enabled: true
     syncwave: "2"
+
+lgtm:
+  enabled: true
+  applicationName: lgtm
+  applicationNamespace: openshift-gitops
+  destinationNamespace: lgtm
+  source:
+    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    targetRevision: main
+    path: install/helm/lgtm
+    helm:
+      values:
+        grafana:
+          route:
+            host: 
+  argocd:
+    enabled: true
+    syncwave: "2"
+
+minio:
+  enabled: true
+  applicationName: minio
+  applicationNamespace: openshift-gitops
+  destinationNamespace: lgtm
+  source:
+    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    targetRevision: main
+    path: install/helm/minio
+    helm:
+      values: {}
+  argocd:
+    enabled: true
+    syncwave: "1"
