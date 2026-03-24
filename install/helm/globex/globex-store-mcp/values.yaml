@@ -118,3 +118,14 @@ affinity: {}
 
 globexStore:
   url: http://globex-store-app:8080
+
+otel:
+  enabled: true
+  metrics:
+    enabled: true
+  traces:
+    enabled: true
+  logs:
+    enabled: true
+  exporter:
+    endpoint:

@@ -56,14 +56,19 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
+            - mountPath: /deployments/config
+              name: config
+          {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
             - name: QUARKUS_REST_CLIENT__GLOBEX_STORE__URL
               value: {{ .Values.globexStore.url }}
-      {{- with .Values.volumes }}
       volumes:
+        - name: config
+          secret:
+            secretName: {{ include "globex-store-mcp.name" . }}
+      {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
