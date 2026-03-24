@@ -143,6 +143,9 @@ globex:
               url: http://globex-complaints:8080/mcp
               logRequests: true
               logResponses: true
+          otel:
+            exporter:
+              endpoint: http://otel.lgtm.svc.cluster.local:4317
 
   argocd:
     enabled: true

@@ -149,3 +149,13 @@ cors:
   origins: '*'
   methods: GET,POST,DELETE,OPTIONS
 
+otel:
+  enabled: true
+  metrics:
+    enabled: true
+  traces:
+    enabled: true
+  logs:
+    enabled: true
+  exporter:
+    endpoint:
