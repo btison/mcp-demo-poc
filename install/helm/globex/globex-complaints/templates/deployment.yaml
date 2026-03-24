@@ -56,8 +56,10 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
+            - mountPath: /deployments/config
+              name: config
+          {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
@@ -80,7 +82,10 @@ spec:
                 secretKeyRef:
                   key: database-password
                   name: {{ .Values.globexDb.secret.name }}
-      {{- with .Values.volumes }}
       volumes:
+        - name: config
+          secret:
+            secretName: {{ include "globex-complaints.name" . }}
+      {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

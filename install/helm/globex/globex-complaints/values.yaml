@@ -120,3 +120,14 @@ globexDb:
   name: globex-db
   secret:
     name: globex-db
+  
+otel:
+  enabled: true
+  metrics:
+    enabled: true
+  traces:
+    enabled: true
+  logs:
+    enabled: true
+  exporter:
+    endpoint:

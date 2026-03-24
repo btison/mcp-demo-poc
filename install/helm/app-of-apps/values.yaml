@@ -147,6 +147,11 @@ globex:
             exporter:
               endpoint: http://otel.lgtm.svc.cluster.local:4317
 
+        globex-complaints:
+          otel:
+            exporter:
+              endpoint: http://otel.lgtm.svc.cluster.local:4317
+
   argocd:
     enabled: true
     syncwave: "2"
