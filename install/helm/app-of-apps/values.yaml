@@ -159,7 +159,7 @@ globex:
 
   argocd:
     enabled: true
-    syncwave: "2"
+    syncwave: "3"
 
 lgtm:
   enabled: true
