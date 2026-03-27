@@ -173,8 +173,8 @@ lgtm:
     helm:
       values:
         grafana:
-          route:
-            host:
+          ingress:
+            hosts:
         tempo:
           tempo:
             storage:
@@ -193,6 +193,10 @@ lgtm:
               s3:
                 access_key_id: 
                 secret_access_key: 
+        prometheus:
+          server:
+            ingress:
+              hosts:
 
   argocd:
     enabled: true
