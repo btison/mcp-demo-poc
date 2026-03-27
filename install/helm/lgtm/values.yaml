@@ -425,6 +425,27 @@ prometheus:
           static_configs:
             - targets:
                 - localhost:9090
+        - job_name: globex-services
+          metrics_path: /q/metrics
+          kubernetes_sd_configs:
+            - role: endpoints
+              namespaces:
+                names:
+                  - globex
+          relabel_configs:
+            # Keep only endpoints for globex services
+            - source_labels: [__meta_kubernetes_service_name]
+              action: keep
+              regex: globex-agent|globex-complaints|globex-store-mcp
+            # Add service name as a label
+            - source_labels: [__meta_kubernetes_service_name]
+              target_label: service
+            # Add namespace as a label
+            - source_labels: [__meta_kubernetes_namespace]
+              target_label: namespace
+            # Add pod name as a label
+            - source_labels: [__meta_kubernetes_pod_name]
+              target_label: pod
     alerting_rules.yml: {}
     recording_rules.yml: {}
     alerts: {}
