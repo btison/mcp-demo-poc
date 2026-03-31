@@ -105,42 +105,33 @@ public class ComplaintResource {
 
     @GET
     @Path("/product/{productCode}")
-    public Uni<Response> getComplaintsByProduct(@PathParam("productCode") String productCode) {
-        return Uni.createFrom().item(() -> productCode)
-                .emitOn(Infrastructure.getDefaultWorkerPool())
-                .onItem().transform(code -> {
-                    List<ComplaintDto> complaints = complaintService.findByProductCode(code);
-                    return Response.ok(complaints).build();
-                })
-                .onFailure().recoverWithItem(throwable -> {
-                    Log.error("Failed to get complaints by product", throwable);
-                    return Response.serverError().build();
-                });
-    }
-
-    @GET
-    @Path("/product/{productCode}/timerange")
-    public Uni<Response> getComplaintsByProductAndTimeRange(
+    public Uni<Response> getComplaintsByProduct(
             @PathParam("productCode") String productCode,
             @QueryParam("startTime") String startTime,
-            @QueryParam("endTime") String endTime) {
+            @QueryParam("endTime") String endTime,
+            @QueryParam("sortBySeverity") @DefaultValue("true") boolean sortBySeverity) {
 
-        if (startTime == null || endTime == null) {
+        if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
             return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\": \"startTime and endTime query parameters are required\"}")
+                    .entity("{\"error\": \"Both startTime and endTime must be provided together\"}")
                     .build());
         }
 
         return Uni.createFrom().item(() -> productCode)
                 .emitOn(Infrastructure.getDefaultWorkerPool())
                 .onItem().transform(code -> {
-                    OffsetDateTime start = OffsetDateTime.parse(startTime);
-                    OffsetDateTime end = OffsetDateTime.parse(endTime);
-                    List<ComplaintDto> complaints = complaintService.findByProductCodeAndTimeRange(code, start, end);
+                    List<ComplaintDto> complaints;
+                    if (startTime != null) {
+                        OffsetDateTime start = OffsetDateTime.parse(startTime);
+                        OffsetDateTime end = OffsetDateTime.parse(endTime);
+                        complaints = complaintService.findByProductCodeAndTimeRange(code, start, end, sortBySeverity);
+                    } else {
+                        complaints = complaintService.findByProductCode(code);
+                    }
                     return Response.ok(complaints).build();
                 })
                 .onFailure().recoverWithItem(throwable -> {
-                    Log.error("Failed to get complaints by product and time range", throwable);
+                    Log.error("Failed to get complaints by product", throwable);
                     return Response.serverError().build();
                 });
     }

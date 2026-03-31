@@ -69,8 +69,8 @@ public class ComplaintService {
     }
 
     @Transactional
-    public List<ComplaintDto> findByProductCodeAndTimeRange(String productCode, OffsetDateTime startTime, OffsetDateTime endTime) {
-        return Complaint.findByProductCodeAndTimeRange(productCode, startTime, endTime)
+    public List<ComplaintDto> findByProductCodeAndTimeRange(String productCode, OffsetDateTime startTime, OffsetDateTime endTime, boolean sortBySeverity) {
+        return Complaint.findByProductCodeAndTimeRange(productCode, startTime, endTime, sortBySeverity)
                 .stream()
                 .map(ComplaintDto::from)
                 .collect(Collectors.toList());

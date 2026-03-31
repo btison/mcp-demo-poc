@@ -62,28 +62,35 @@ public class Complaint extends PanacheEntityBase {
      * @param productCode the product code to filter by
      * @param startTime the start of the time range (inclusive)
      * @param endTime the end of the time range (inclusive)
+     * @param sortBySeverity if true, sorts by severity then created time; if false, sorts only by created time
      * @return list of complaints matching the criteria
      */
     public static List<Complaint> findByProductCodeAndTimeRange(
             String productCode,
             OffsetDateTime startTime,
-            OffsetDateTime endTime) {
-        return find(
-            "SELECT c FROM Complaint c " +
-            "WHERE c.productCode = ?1 " +
-            "AND c.createdAt >= ?2 " +
-            "AND c.createdAt <= ?3 " +
-            "ORDER BY " +
-            "CASE c.severity " +
-            "  WHEN 'critical' THEN 1 " +
-            "  WHEN 'high' THEN 2 " +
-            "  WHEN 'medium' THEN 3 " +
-            "  WHEN 'low' THEN 4 " +
-            "  ELSE 5 " +
-            "END, " +
-            "c.createdAt DESC",
-            productCode, startTime, endTime
-        ).list();
+            OffsetDateTime endTime,
+            boolean sortBySeverity) {
+
+        String query = "SELECT c FROM Complaint c " +
+                "WHERE c.productCode = ?1 " +
+                "AND c.createdAt >= ?2 " +
+                "AND c.createdAt <= ?3 ";
+
+        if (sortBySeverity) {
+            query += "ORDER BY " +
+                    "CASE c.severity " +
+                    "  WHEN 'critical' THEN 1 " +
+                    "  WHEN 'high' THEN 2 " +
+                    "  WHEN 'medium' THEN 3 " +
+                    "  WHEN 'low' THEN 4 " +
+                    "  ELSE 5 " +
+                    "END, " +
+                    "c.createdAt DESC";
+        } else {
+            query += "ORDER BY c.createdAt DESC";
+        }
+
+        return find(query, productCode, startTime, endTime).list();
     }
 
     @PrePersist
