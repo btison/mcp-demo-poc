@@ -1,6 +1,8 @@
 package org.globex.retail.complaints.persistence;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.persistence.*;
 
@@ -63,13 +65,17 @@ public class Complaint extends PanacheEntityBase {
      * @param startTime the start of the time range (inclusive)
      * @param endTime the end of the time range (inclusive)
      * @param sortBySeverity if true, sorts by severity then created time; if false, sorts only by created time
+     * @param page the page number (0-based), null for no paging
+     * @param pageSize the number of items per page, null for no paging
      * @return list of complaints matching the criteria
      */
     public static List<Complaint> findByProductCodeAndTimeRange(
             String productCode,
             OffsetDateTime startTime,
             OffsetDateTime endTime,
-            boolean sortBySeverity) {
+            boolean sortBySeverity,
+            Integer page,
+            Integer pageSize) {
 
         String query = "SELECT c FROM Complaint c " +
                 "WHERE c.productCode = ?1 " +
@@ -90,7 +96,13 @@ public class Complaint extends PanacheEntityBase {
             query += "ORDER BY c.createdAt DESC";
         }
 
-        return find(query, productCode, startTime, endTime).list();
+        PanacheQuery<Complaint> panacheQuery = find(query, productCode, startTime, endTime);
+
+        if (page != null && pageSize != null) {
+            panacheQuery.page(Page.of(page, pageSize));
+        }
+
+        return panacheQuery.list();
     }
 
     @PrePersist

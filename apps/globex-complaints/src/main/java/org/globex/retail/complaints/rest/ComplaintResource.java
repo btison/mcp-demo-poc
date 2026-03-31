@@ -109,11 +109,19 @@ public class ComplaintResource {
             @PathParam("productCode") String productCode,
             @QueryParam("startTime") String startTime,
             @QueryParam("endTime") String endTime,
-            @QueryParam("sortBySeverity") @DefaultValue("true") boolean sortBySeverity) {
+            @QueryParam("sortBySeverity") @DefaultValue("true") boolean sortBySeverity,
+            @QueryParam("page") Integer page,
+            @QueryParam("pageSize") Integer pageSize) {
 
         if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
             return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"Both startTime and endTime must be provided together\"}")
+                    .build());
+        }
+
+        if ((page != null && pageSize == null) || (page == null && pageSize != null)) {
+            return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Both page and pageSize must be provided together\"}")
                     .build());
         }
 
@@ -124,7 +132,7 @@ public class ComplaintResource {
                     if (startTime != null) {
                         OffsetDateTime start = OffsetDateTime.parse(startTime);
                         OffsetDateTime end = OffsetDateTime.parse(endTime);
-                        complaints = complaintService.findByProductCodeAndTimeRange(code, start, end, sortBySeverity);
+                        complaints = complaintService.findByProductCodeAndTimeRange(code, start, end, sortBySeverity, page, pageSize);
                     } else {
                         complaints = complaintService.findByProductCode(code);
                     }
