@@ -54,6 +54,7 @@ spec:
                     host: {{ ocp4_workload_mcp_demo_poc_rhbk_host }}.{{ r_openshift_subdomain }}
         globex:
           source:
+            targetRevision: observability-mimir
             helm:
               values:
                 globex-web:
@@ -94,6 +95,7 @@ spec:
         minio:
           enabled: true
           source:
+            targetRevision: observability-mimir
             helm:
               values:
                 minio:
@@ -105,6 +107,7 @@ spec:
         lgtm:
           enabled: true
           source:
+            targetRevision: observability-mimir
             helm:
               values:
                 grafana:
