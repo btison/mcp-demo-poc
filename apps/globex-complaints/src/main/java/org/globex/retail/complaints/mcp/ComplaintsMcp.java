@@ -12,23 +12,18 @@ import org.globex.retail.complaints.model.ComplaintDto;
 import org.globex.retail.complaints.model.CreateComplaintRequest;
 import org.globex.retail.complaints.model.UpdateComplaintRequest;
 import org.globex.retail.complaints.service.ComplaintService;
-import org.globex.retail.complaints.service.DatabaseService;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class ComplaintsMcp {
 
     @Inject
     ComplaintService complaintService;
-
-    @Inject
-    DatabaseService databaseService;
 
     @Inject
     HttpServerRequest request;
@@ -94,57 +89,6 @@ public class ComplaintsMcp {
             return objectMapper.writeValueAsString(complaintList);
         } catch (JsonProcessingException e) {
             throw new ToolCallException("Failed to get complaint: " + e.getMessage(), e);
-        }
-    }
-
-    @Tool(name = "describe_tables", description = "Describe the database tables.")
-    public String describeTable() {
-        // restricted to the complaints table
-        try {
-            return objectMapper.writeValueAsString(databaseService.describeTable("complaints"));
-        } catch (Exception e) {
-            throw new ToolCallException("Failed to describe table: " + e.getMessage());
-        }
-    }
-
-    @Tool(name = "list_tables", description = "List the tables in the database")
-    public String listTables() {
-        // restricted to the complaints table
-        List<Map<String, String>> tables = databaseService.listTables().stream()
-                .filter(stringStringMap -> "complaints".equalsIgnoreCase(stringStringMap.get("TABLE_NAME"))).toList();
-        try {
-            return objectMapper.writeValueAsString(tables);
-        } catch (Exception e) {
-            throw new ToolCallException("Failed to list tables: " + e.getMessage(), e);
-        }
-
-    }
-
-    @Tool(name = "database_info", description = "Get information about the database. Run this before anything else to know the SQL dialect, keywords etc.")
-    public String databaseInfo() {
-        try {
-            return objectMapper.writeValueAsString(databaseService.databaseInfo());
-        } catch (Exception e) {
-            throw new ToolCallException("Failed to get database info: " + e.getMessage(), e);
-        }
-    }
-
-    @Tool(name = "read_query", description = "Execute a SELECT query on the database")
-    public String readQuery(@ToolArg(description = "The SELECT SQL query to execute") String query) {
-        // restricted to SELECT queries and the complaints table
-        if (query == null || query.isEmpty()) {
-            throw new ToolCallException("SQL query is null or empty");
-        }
-        if (!query.startsWith("SELECT")) {
-            throw new ToolCallException("The query is not a valid SELECT query: " + query);
-        }
-        if (!query.toLowerCase().contains("complaints")) {
-            throw new ToolCallException("SELECT queries are only allowed against the complaints table: " + query);
-        }
-        try {
-            return objectMapper.writeValueAsString(databaseService.queryDatabase(query));
-        } catch (Exception e) {
-            throw new ToolCallException("Failed to execute query: " + e.getMessage(), e);
         }
     }
 }
