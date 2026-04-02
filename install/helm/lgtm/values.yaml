@@ -30,10 +30,10 @@ grafana:
           type: loki
           url: http://loki:3100
           isDefault: false
-        - name: Prometheus
-          uid: prometheus
+        - name: Mimir
+          uid: prom
           type: prometheus
-          url: http://prometheus-server:9090
+          url: http://mimir-monolithic:8080/prometheus
           isDefault: true
         - name: Tempo
           uid: tempo
@@ -194,6 +194,69 @@ tempo:
     - name: storage
       emptyDir: {}
 
+mimir:
+  enabled: true
+  deploymentMode: monolithic
+
+  fullnameOverride: mimir
+  nameOverride: mimir
+
+  kafka:
+    enabled: false
+
+  mimir:
+    structuredConfig:
+      limits:
+        # Delete from storage metrics data older than 62 days.
+        compactor_blocks_retention_period: 62d
+      ingest_storage:
+        enabled: false
+        kafka:
+          address: null
+          topic: null
+          auto_create_topic_default_partitions: null
+      distributor:
+        remote_timeout: null
+      ingester:
+        push_grpc_method_enabled: true
+      multitenancy_enabled: false
+
+  monolithic:
+    replicas: 1
+    image:
+      repository: docker.io/grafana/mimir
+      tag: r354-d48a2220
+    persistentVolume:
+      enabled: true
+      size: "8Gi"
+    zoneAwareReplication:
+      enabled: false
+    compression:
+      enabled: true
+    podSecurityContext:
+      fsGroup: null
+      runAsGroup: null
+      runAsNonRoot: true
+      runAsUser: null
+      seccompProfile:
+        type: RuntimeDefault
+    topologySpreadConstraints: null
+
+  minio:
+    enabled: true
+    name: minio
+    service:
+      port: 9000
+    rootUser: minio
+    rootPassword: ""
+
+  alertmanager:
+    enabled: false
+    fallbackConfig: null
+
+  rollout_operator:
+    enabled: false
+
 opentelemetry-collector:
   enabled: true
   nameOverride: otel
@@ -231,7 +294,15 @@ opentelemetry-collector:
           X-Scope-OrgID: "anonymous"
         tls:
           insecure: true
-
+      
+      # Export metrics to Mimir (LGTM stack) with OTLP
+      otlphttp/mimir:
+        endpoint: http://mimir-monolithic:8080/otlp
+        headers:
+          X-Scope-OrgID: "anonymous"
+        tls:
+          insecure: true
+      
       # Export traces to Tempo (LGTM stack)
       otlp/tempo:
         endpoint: "tempo:4317"
@@ -251,125 +322,9 @@ opentelemetry-collector:
         logs:
           receivers: [otlp]
           exporters: [otlphttp/loki]
+        metrics:
+          receivers: [otlp]
+          exporters: [otlphttp/mimir]
         traces:
           receivers: [otlp]
           exporters: [otlp/tempo]
-
-prometheus:
-  enabled: true
-  nameOverride: prometheus
-  fullnameOverride: prometheus
-
-  # Disable all components except the prometheus server
-  alertmanager:
-    enabled: false
-
-  kube-state-metrics:
-    enabled: false
-
-  prometheus-node-exporter:
-    enabled: false
-
-  prometheus-pushgateway:
-    enabled: false
-
-  # Configure the Prometheus server
-  server:
-    enabled: true
-    fullnameOverride: prometheus-server
-
-    # OpenShift-compatible security context
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: null
-      runAsGroup: null
-      fsGroup: null
-      seccompProfile:
-        type: RuntimeDefault
-
-    # Container security context
-    containerSecurityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
-      readOnlyRootFilesystem: true
-
-    # Persistent storage for metrics
-    persistentVolume:
-      enabled: true
-      size: 8Gi
-
-    # Retention period for metrics
-    retention: "15d"
-
-    # Service configuration
-    service:
-      type: ClusterIP
-      servicePort: 9090
-
-    # Ingress/Route configuration for OpenShift
-    ingress:
-      enabled: true
-      annotations:
-        route.openshift.io/termination: edge
-      hosts: []
-      path: /
-      pathType: Prefix
-
-    # Resource limits
-    resources:
-      limits:
-        cpu: 2
-        memory: 2Gi
-      requests:
-        cpu: 500m
-        memory: 512Mi
-
-    # Prometheus configuration
-    global:
-      scrape_interval: 30s
-      scrape_timeout: 10s
-      evaluation_interval: 30s
-
-    # Minimal scrape configs - will scrape itself
-    extraScrapeConfigs: ""
-  # Disable default Kubernetes scrape configs
-  # Override the entire serverFiles to exclude kubernetes-apiservers and other k8s jobs
-  serverFiles:
-    prometheus.yml:
-      rule_files:
-        - /etc/config/recording_rules.yml
-        - /etc/config/alerting_rules.yml
-        - /etc/config/rules
-        - /etc/config/alerts
-      scrape_configs:
-        - job_name: prometheus
-          static_configs:
-            - targets:
-                - localhost:9090
-        - job_name: globex-services
-          metrics_path: /q/metrics
-          kubernetes_sd_configs:
-            - role: endpoints
-              namespaces:
-                names:
-                  - globex
-          relabel_configs:
-            # Keep only endpoints for globex services
-            - source_labels: [__meta_kubernetes_service_name]
-              action: keep
-              regex: globex-agent|globex-complaints|globex-store-mcp
-            # Add service name as a label
-            - source_labels: [__meta_kubernetes_service_name]
-              target_label: service
-            # Add namespace as a label
-            - source_labels: [__meta_kubernetes_namespace]
-              target_label: namespace
-            # Add pod name as a label
-            - source_labels: [__meta_kubernetes_pod_name]
-              target_label: pod
-    alerting_rules.yml: {}
-    recording_rules.yml: {}
-    alerts: {}
-    rules: {}
