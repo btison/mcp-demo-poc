@@ -15,7 +15,7 @@ amqstreams:
   applicationNamespace: openshift-gitops
   destinationNamespace: kafka
   source:
-    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    repoUrl: https://github.com/quarkus-mcp-demo/mcp-demo-poc.git
     targetRevision: main
     path: install/helm/amq-streams
     helm:
@@ -67,7 +67,7 @@ keycloak:
   applicationNamespace: openshift-gitops
   destinationNamespace: keycloak
   source:
-    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    repoUrl: https://github.com/quarkus-mcp-demo/mcp-demo-poc.git
     targetRevision: main
     path: install/helm/keycloak
     helm:
@@ -88,7 +88,7 @@ globex:
   applicationNamespace: openshift-gitops
   destinationNamespace: globex
   source:
-    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    repoUrl: https://github.com/quarkus-mcp-demo/mcp-demo-poc.git
     targetRevision: main
     path: install/helm/globex
     helm:
@@ -167,7 +167,7 @@ lgtm:
   applicationNamespace: openshift-gitops
   destinationNamespace: lgtm
   source:
-    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    repoUrl: https://github.com/quarkus-mcp-demo/mcp-demo-poc.git
     targetRevision: main
     path: install/helm/lgtm
     helm:
@@ -204,7 +204,7 @@ minio:
   applicationNamespace: openshift-gitops
   destinationNamespace: lgtm
   source:
-    repoUrl: https://github.com/btison/mcp-demo-poc.git
+    repoUrl: https://github.com/quarkus-mcp-demo/mcp-demo-poc.git
     targetRevision: main
     path: install/helm/minio
     helm:
