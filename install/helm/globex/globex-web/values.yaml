@@ -66,6 +66,10 @@ securityContext:
 
 nodeEnv: prod
 
+globexAgentApp:
+  url: http://globex-agent:8080
+  apiPath: /api/v1/request
+
 globexStoreApp:
   url: http://globex-store-app:8080
   service: globex-store-app
