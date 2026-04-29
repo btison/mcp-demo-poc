@@ -313,7 +313,7 @@ contextforge:
                   author: "ContextForge"
                   hooks: ["prompt_pre_fetch", "tool_post_invoke", "resource_post_fetch"]
                   tags: ["security", "secrets", "dlp"]
-                  mode: "permissive"
+                  mode: "enforce"
                   priority: 51
                   conditions: []
                   config:
@@ -326,9 +326,9 @@ contextforge:
                       jwt_like: true
                       hex_secret_32: true
                       base64_24: false
-                    redact: false
+                    redact: true
                     redaction_text: "***REDACTED***"
-                    block_on_detection: true
+                    block_on_detection: false
                     min_findings_to_block: 1
         migration:
           hookPhase: "post-install"
