@@ -75,6 +75,10 @@ globexDb:
   secret:
     name: globex-db
 
+openapi:
+  servers:
+    host: 
+
 argocd:
   enabled: true
   syncwave: "0"

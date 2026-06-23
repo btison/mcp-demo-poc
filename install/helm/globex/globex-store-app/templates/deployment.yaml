@@ -56,5 +56,7 @@ spec:
                   name: {{ .Values.globexDb.secret.name }}
             - name: QUARKUS_DATASOURCE_JDBC_URL
               value: jdbc:postgresql://{{ .Values.globexDb.name }}:5432/${POSTGRESQL_DATABASE}
+            - name: QUARKUS_SMALLRYE_OPENAPI_SERVERS
+              value: {{ .Values.openapi.servers.host }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
